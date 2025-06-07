@@ -13,3 +13,7 @@ def get_item(item_id: int, q: Union[str, None] = None):
         "Item_id": item_id,
         "Query": q
     }
+    
+@app.post("/say_hello/{name}")
+def say_hello(name: str):
+    return {"Hello": name}
