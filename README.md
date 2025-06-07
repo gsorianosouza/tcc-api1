@@ -13,14 +13,14 @@ Este repositório contém a API desenvolvida com FastAPI para o nosso TCC. Ela s
 
 #### Crie e ative o ambiente virtual
 
-Windows
+*Windows*
 
 ```bash
     python -m venv .venv
     .venv\Scripts\activate
 ```
 
-Linux
+*Linux*
 
 ```bash
     python -m venv .venv
