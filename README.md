@@ -49,8 +49,6 @@ Caso estiver utilizando *Git Bash*, substitua o **bin** por **Scripts** no coman
 
 - Uvicorn
 
-- SQLAlchemy / ORM
-
 ### Status do projeto 🚧
 
 Em desenvolvimento
