@@ -2,7 +2,6 @@
 
 
 
-## Como rodar
 
 #### Clone o repositório
 
