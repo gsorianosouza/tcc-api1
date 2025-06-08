@@ -1,9 +1,8 @@
 # TCC API
 
-## Como rodar o projeto
-
  Este repositório contém a API desenvolvida com FastAPI para o nosso TCC. Ela será responsável por gerenciar e fornecer os dados utilizados no sistema que estamos construindo.
 
+## Como rodar o projeto
 
 #### Clone o repositório
 
