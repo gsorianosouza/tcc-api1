@@ -17,3 +17,9 @@ def get_item(item_id: int, q: Union[str, None] = None):
 @app.post("/say_hello/{name}")
 def say_hello(name: str):
     return {"Hello": name}
+
+@app.get("/testevini")
+def batata():
+    return {
+        "Teste": "Vinicius"
+    }
