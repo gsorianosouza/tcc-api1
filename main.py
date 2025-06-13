@@ -1,25 +1,11 @@
 from fastapi import FastAPI
-from typing import Union
+from routes import system_routes, ml_routes
 
 app = FastAPI();
 
-@app.get("/")
-def hello_world():
-    return {"Hello": "World 😁"}
+@app.get("/",tags=["Home"], summary="Rota inicial da API")
+def read_root():
+    return "Seja Bem-vindo à API!"
 
-@app.get("/items/{item_id}")
-def get_item(item_id: int, q: Union[str, None] = None):
-    return {
-        "Item_id": item_id,
-        "Query": q
-    }
-    
-@app.post("/say_hello/{name}")
-def say_hello(name: str):
-    return {"Hello": name}
-
-@app.get("/testevini")
-def batata():
-    return {
-        "Teste": "Vinicius"
-    }
+app.include_router(system_routes.router, tags= ["Sistema"])
+app.include_router(ml_routes.router, prefix="/model", tags=["Machine Learning"])
