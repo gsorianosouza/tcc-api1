@@ -2,5 +2,27 @@
 venv/
 .venv/
 ENV/
-.env/
+
+# Configurações sensíveis
+.env
+
+# Cache Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Arquivos de Log
+*.log
+
+# Arquivos do DB local
+*.sqlite3
+*.db
+
+# Arquivos do Sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE
+.vscode/
+.idea/

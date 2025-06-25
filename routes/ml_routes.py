@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from models.feedback_schema import *
+from schemas.feedback_schema import *
 
 router = APIRouter()
 
