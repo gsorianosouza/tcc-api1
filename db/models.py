@@ -4,6 +4,8 @@ from datetime import datetime
 
 from db.database import Base
 
+#Tabela que representa nosso modelo de IA com base em modelos preditivos.
+# Ela armazena informações como nome, versão e data de criação do modelo.
 class Model(Base):
     __tablename__ = 'model'
     
@@ -11,9 +13,11 @@ class Model(Base):
     name = Column(String, nullable=False)
     version = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now())
-    
+
+    # Relação com as previsões feitas por nosso modelo.
     prediction_id = relationship("Prediction", back_populates="model")
-    
+
+#Esta tabela representa uma previsão feita pelo nosso modelo.
 class Prediction(Base):
     __tablename__ = 'prediction'
     
@@ -21,6 +25,5 @@ class Prediction(Base):
     input_text = Column(String, nullable=False)
     result = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now())
-    
     model_id = Column(Integer, ForeignKey('model.id'))
     model = relationship("Model", back_populates="prediction_id")
