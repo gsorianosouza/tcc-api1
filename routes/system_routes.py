@@ -6,7 +6,6 @@ from db.models import Model
 
 router = APIRouter()
 
-#Rota para verificar se a API está funcionando e qual versão do modelo está carregada.
 @router.get("/status", summary="Verifica o status da API")
 def get_status():
     return {

@@ -1,6 +1,6 @@
 from db.database import SessionLocal
 
-#Fornece uma sessão de banco de dados para uso temporário
+#Fornece uma sessão de banco de dados para uso temporário.
 def get_db():
     db = SessionLocal()
     try:
