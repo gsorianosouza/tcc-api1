@@ -8,6 +8,6 @@ def init_db():
     models.Base.metadata.create_all(bind=engine)
     
     print("Tabelas criadas com sucesso!")
-
+#Executa a função ao rodar o script diretamente.
 if __name__ == "__main__":
     init_db()
