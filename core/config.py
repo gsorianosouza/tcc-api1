@@ -13,7 +13,7 @@ class Settings (BaseSettings):
     MODEL_PATH: Path = BASE_DIR / "model" / "model.pkl"
     
     #Configurações do banco de dados.
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./test.db"  #Valor padrão de placeholder, deve ser substituído por uma URL de banco de dados real.
     
     # Configurações do servidor.
     HOST: str = "0.0.0"

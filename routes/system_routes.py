@@ -13,9 +13,6 @@ def get_status():
         "model_loaded": True,
         "model_version": "TF-IDF 1.0"
     }
-<<<<<<< HEAD
-=======
-    
 @router.post("/add-model", summary="Adiciona um novo modelo")
 def add_model(model: ModelSchema, db: Session = Depends(get_db)):
 
@@ -45,4 +42,3 @@ def add_model(model: ModelSchema, db: Session = Depends(get_db)):
             "created_at": new_model.created_at.isoformat()
         }
     }
->>>>>>> ef1af0e88f079e4ea218900e468e80231e50c87d
