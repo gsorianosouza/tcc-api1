@@ -35,6 +35,16 @@ Caso estiver utilizando *Git Bash*, substitua o **bin** por **Scripts** no coman
     pip install -r requirements.txt
 ```
 
+#### Crie as tabelas no banco de dados
+
+Antes de iniciar o servidor, execute o comando abaixo para criar as tabelas no banco de dados:
+
+```bash
+    python -m db.init_db
+```
+
+Por enquanto é necessário ter o banco criado no editor (PgAdmin, DBeaver, etc).
+
 #### Rode a aplicação local
 
 ```bash
