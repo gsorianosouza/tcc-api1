@@ -7,7 +7,7 @@ from db.database import Base
 class Model(Base):
     __tablename__ = 'model'
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False)
     version = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
@@ -17,7 +17,7 @@ class Model(Base):
 class Prediction(Base):
     __tablename__ = 'prediction'
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     input_text = Column(String, nullable=False)
     result = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
