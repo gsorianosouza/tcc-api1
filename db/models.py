@@ -27,3 +27,11 @@ class Prediction(Base):
     created_at = Column(DateTime, default=datetime.now())
     model_id = Column(Integer, ForeignKey('model.id'))
     model = relationship("Model", back_populates="prediction_id")
+
+class Sources(Base):
+    __tablename__ = 'sources'
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    link = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.now())
