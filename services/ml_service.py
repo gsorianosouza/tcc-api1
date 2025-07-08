@@ -3,6 +3,6 @@ import joblib
 
 model = joblib.load(settings.MODEL_PATH)
 
-def predict(text: str):
-    result = model.predict([text])
-    return result[0]
+def predict(text: str) -> bool:
+    result = model.predict([text.strip()])
+    return bool(result[0])
