@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from db.models import Model, Sources
+from db.models import Model
 from schemas.model_schema import ModelSchema
 from sqlalchemy.orm import Session
 from db.deps import get_db
