@@ -17,5 +17,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(system_routes.router, tags= ["Sistema"])
+app.include_router(system_routes.router,prefix="/admin", tags= ["Administrador"])
 app.include_router(ml_routes.router, prefix="/model", tags=["Machine Learning"])

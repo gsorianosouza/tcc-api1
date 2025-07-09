@@ -14,6 +14,7 @@ def get_status():
         "model_loaded": True,
         "model_version": "TF-IDF 1.0"
     }
+<<<<<<< HEAD
 
 @router.get("/model/list", summary="Lista todos os modelos")
 def list_models(db: Session = Depends(get_db)):
@@ -30,6 +31,10 @@ def list_models(db: Session = Depends(get_db)):
     }
 
 @router.post("/model/add", summary="Adiciona um novo modelo")
+=======
+    
+@router.post("/add-model", summary="Adiciona um novo modelo")
+>>>>>>> b3f42f3a4191a5528953a580669593ea04bfe7e5
 def add_model(model: ModelSchema, db: Session = Depends(get_db)):
 
     if not model.name or not model.version:
