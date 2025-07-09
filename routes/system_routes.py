@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
+from db.models import Model, Sources
 from schemas.model_schema import ModelSchema
 from sqlalchemy.orm import Session
 from db.deps import get_db
-from db.models import Model
 
 router = APIRouter()
 
@@ -43,3 +43,15 @@ def add_model(model: ModelSchema, db: Session = Depends(get_db)):
             "created_at": new_model.created_at.isoformat()
         }
     }
+
+@router.delete("/delete-model/{model_id}", summary="Deleta um modelo existente")
+def delete_model(model_id: int, db: Session = Depends(get_db)):
+    model = db.query(Model).filter(Model.id == model_id).first()
+    
+    if not model:
+        return { "Message": "Modelo não encontrado!" }
+    
+    db.delete(model)
+    db.commit()
+    
+    return { "Message": "Modelo deletado com sucesso!" }

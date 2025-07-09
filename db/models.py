@@ -12,7 +12,7 @@ class Model(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False)
     version = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
 
     # Relação com as previsões feitas por nosso modelo.
     prediction_id = relationship("Prediction", back_populates="model")
@@ -24,6 +24,6 @@ class Prediction(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     input_text = Column(String, nullable=False)
     result = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
     model_id = Column(Integer, ForeignKey('model.id'))
     model = relationship("Model", back_populates="prediction_id")

@@ -26,3 +26,6 @@ Thumbs.db
 # Arquivos de IDE
 .vscode/
 .idea/
+
+# Modelo de Machine Learning já treinado
+*.pkl
