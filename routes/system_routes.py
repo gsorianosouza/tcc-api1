@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from db.models import Model, Sources
 from schemas.model_schema import ModelSchema
-from schemas.source_schema import SourceSchema
 from sqlalchemy.orm import Session
 from db.deps import get_db
 
@@ -14,27 +13,8 @@ def get_status():
         "model_loaded": True,
         "model_version": "TF-IDF 1.0"
     }
-<<<<<<< HEAD
-
-@router.get("/model/list", summary="Lista todos os modelos")
-def list_models(db: Session = Depends(get_db)):
-    models = db.query(Model).all()
-    return {
-        "models": [
-            {
-                "id": model.id,
-                "name": model.name,
-                "version": model.version,
-                "created_at": model.created_at.isoformat()
-            } for model in models
-        ]
-    }
-
-@router.post("/model/add", summary="Adiciona um novo modelo")
-=======
     
 @router.post("/add-model", summary="Adiciona um novo modelo")
->>>>>>> b3f42f3a4191a5528953a580669593ea04bfe7e5
 def add_model(model: ModelSchema, db: Session = Depends(get_db)):
 
     if not model.name or not model.version:
@@ -64,41 +44,14 @@ def add_model(model: ModelSchema, db: Session = Depends(get_db)):
         }
     }
 
-@router.get("/source/list", summary="Lista a quantidade de fontes")
-def list_source(db: Session = Depends(get_db)):
-    sources_count = db.query(Sources).count()
+@router.delete("/delete-model/{model_id}", summary="Deleta um modelo existente")
+def delete_model(model_id: int, db: Session = Depends(get_db)):
+    model = db.query(Model).filter(Model.id == model_id).first()
     
-    if sources_count == 0:
-        return {"message": "Nenhuma fonte encontrada."}
-    else:
-        return {"quantidade_de_fontes": sources_count}
+    if not model:
+        return { "Message": "Modelo não encontrado!" }
     
-@router.post("/source/add", summary="Adiciona uma nova fonte")
-def add_source(source: SourceSchema, db: Session = Depends(get_db)):
-
-    if not source.link or not source.description:
-        return { "Message": "Nome e versão do modelo são obrigatórios!"}
-    
-    existing_source = db.query(Sources).filter(
-    Sources.link == source.link
-    ).first()
-
-    
-    if existing_source:
-        return { "Message": "Não foi possível adicionar, essa fonte já existe no banco de dados" }
-    
-    new_source = Sources( link=source.link, description=source.description)
-
-    db.add(new_source)
+    db.delete(model)
     db.commit()
-    db.refresh(new_source)
-
-    return {
-        "Message": "Fonte adicionada com sucesso!",
-        "Model": {
-            "id": new_source.id,
-            "link": new_source.link,
-            "description": new_source.description,
-            "created_at": new_source.created_at.isoformat()
-        }
-    }
+    
+    return { "Message": "Modelo deletado com sucesso!" }
