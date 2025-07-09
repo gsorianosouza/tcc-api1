@@ -45,6 +45,14 @@ Antes de iniciar o servidor, execute o comando abaixo para criar as tabelas no b
 
 Por enquanto é necessário ter o banco criado no editor (PgAdmin, DBeaver, etc).
 
+#### Treine o modelo de Machine Learning
+
+Antes de iniciar a aplicação é necessário treinar o modelo de ML, para isso execute o código abaixo:
+
+```bash
+   python model/training/train_model.py
+```
+
 #### Rode a aplicação local
 
 ```bash
