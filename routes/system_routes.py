@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from db.models import Model
+from db.models import Prediction
 from schemas.model_schema import ModelSchema
 from sqlalchemy.orm import Session
 from db.deps import get_db
@@ -55,3 +56,42 @@ def delete_model(model_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return { "Message": "Modelo deletado com sucesso!" }
+
+@router.get("/admin/models", summary="Lista todos os modelos cadastrados")
+def list_models(db: Session = Depends(get_db)):
+    models = db.query(Model).all()
+    
+    if not models:
+        return { "Message": "Nenhum modelo encontrado!" }
+    
+    return {
+        "Message": "Modelos encontrados!",
+        "Models": [
+            {
+                "id": model.id,
+                "name": model.name,
+                "version": model.version,
+                "created_at": model.created_at.isoformat()
+            } for model in models
+        ]
+    }
+
+@router.get("/admin/predictions", summary="Lista o histórico de previsões")
+def list_predictions(db: Session = Depends(get_db)):
+    predictions = db.query(Prediction).all()
+
+    if not predictions: 
+        return { "Message": "Nenhuma previsão encontrada!" }
+    
+    return {
+        "Message": "Previsões encontradas!",
+        "Predictions": [
+            {
+                "id": prediction.id,
+                "input_text": prediction.input_text,
+                "result": prediction.result,
+                "model_id": prediction.model_id,
+                "created_at": prediction.created_at.isoformat()
+            } for prediction in predictions
+        ]
+    }
