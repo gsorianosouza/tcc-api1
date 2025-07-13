@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Path
 from db.models import Feedback, Model
-from schemas.feedback_schema import FeedbackResponseFull
+from schemas.feedback_schema import FeedbackResponse, FeedbackResponseFull, UpdateFeedbackRequest
 from schemas.model_schema import ModelSchema
 from sqlalchemy.orm import Session
 from db.deps import get_db
@@ -68,17 +68,24 @@ def list_feedbacks(db: Session = Depends(get_db)):
     feedbacks = db.query(Feedback).all()
     return feedbacks
 
-@router.get(
-    "/feedback/{feedback_id}",
-    response_model=FeedbackResponseFull,
-    summary="Obter feedback por ID",
-    description="Retorna um feedback específico baseado no ID fornecido."
+@router.put(
+    "/feedback/{prediction_id}",
+    response_model=FeedbackResponse,
+    summary="Atualiza um feedback existente",
+    description="Edita o campo 'correct_label' de um feedback com base no prediction_id."
 )
-def feedback_by_id(
-    feedback_id: int = Path(..., description="ID do feedback a ser retornado"),
+def update_feedback(
+    prediction_id: int,
+    payload: UpdateFeedbackRequest,
     db: Session = Depends(get_db)
 ):
-    feedback = db.query(Feedback).filter_by(prediction_id=feedback_id).first()
+    feedback = db.query(Feedback).filter_by(prediction_id=prediction_id).first()
+
     if not feedback:
-        raise HTTPException(status_code=404, detail="Feedback não encontrado.")
-    return feedback
+        raise HTTPException(status_code=404, detail="Feedback não encontrado para essa previsão.")
+
+    feedback.correct_label = payload.correct_label
+    db.commit()
+    db.refresh(feedback)
+
+    return FeedbackResponse(message="Feedback atualizado com sucesso!")
