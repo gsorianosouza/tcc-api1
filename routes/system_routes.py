@@ -69,7 +69,7 @@ def list_feedbacks(db: Session = Depends(get_db)):
     return feedbacks
 
 @router.get(
-    "/admin/feedback/{feedback_id}",
+    "/feedback/{feedback_id}",
     response_model=FeedbackResponseFull,
     summary="Obter feedback por ID",
     description="Retorna um feedback específico baseado no ID fornecido."
