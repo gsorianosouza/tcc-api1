@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException, Path, Depends
 from schemas.feedback_schema import *
 from schemas.prediction_schema import *
 from services import ml_service
-from db.models import Model, Prediction
+from db.models import Feedback, Model, Prediction
 from db.deps import get_db
 from sqlalchemy.orm import Session
 
@@ -31,13 +31,29 @@ def predict(payload: PredictionRequest, db: Session = Depends(get_db)):
     db.refresh(new_prediction)
     
     return PredictionResponse(text=payload.text, prediction=prediction, prediction_id=new_prediction.id)
+
+@router.post("/feedback", 
+             response_model=FeedbackResponse, 
+             summary="Envia feedback sobre uma previsão", 
+             description="Recebe o ID da previsão e se a previsão estava correta ou não.")
+def send_feedback(payload: FeedbackRequest, db: Session = Depends(get_db)):
+    # Verifica se a previsão existe no banco de dados
+    prediction = db.query(Prediction).filter_by(id=payload.prediction_id).first()
     
-@router.post(
-    "/feedback", 
-    response_model=FeedbackResponse, 
-    summary="Enviar feedback sobre uma previsão", 
-    description="Permite que o usuário envie um feedback sobre a previsão do modelo."
-)
-def feedback(feedback: FeedbackRequest):
-    print(f"Feedback recebido para {feedback.prediction_id}: {feedback.correct_label}")
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Previsão não encontrada!")
+    
+    existing_feedback = db.query(Feedback).filter_by(prediction_id=payload.prediction_id).first()
+    if existing_feedback:
+        raise HTTPException(status_code=400, detail="Feedback para essa previsão já existe.")
+    
+    # Cria um novo feedback no banco de dados
+    new_feedback = Feedback(
+        prediction_id=payload.prediction_id,
+        correct_label=payload.correct_label
+    )
+    db.add(new_feedback)
+    db.commit()
+    db.refresh(new_feedback)
+    
     return FeedbackResponse(message="Feedback recebido com sucesso!")

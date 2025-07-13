@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends
-from db.models import Model
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Path
+from db.models import Feedback, Model
+from schemas.feedback_schema import FeedbackResponseFull
 from schemas.model_schema import ModelSchema
 from sqlalchemy.orm import Session
 from db.deps import get_db
@@ -55,3 +57,28 @@ def delete_model(model_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return { "Message": "Modelo deletado com sucesso!" }
+
+@router.get(
+    "/feedback-list",
+    response_model=List[FeedbackResponseFull],
+    summary="Lista todos os feedbacks",
+    description="Retorna todos os feedbacks armazenados no banco de dados."
+)
+def list_feedbacks(db: Session = Depends(get_db)):
+    feedbacks = db.query(Feedback).all()
+    return feedbacks
+
+@router.get(
+    "/admin/feedback/{feedback_id}",
+    response_model=FeedbackResponseFull,
+    summary="Obter feedback por ID",
+    description="Retorna um feedback específico baseado no ID fornecido."
+)
+def feedback_by_id(
+    feedback_id: int = Path(..., description="ID do feedback a ser retornado"),
+    db: Session = Depends(get_db)
+):
+    feedback = db.query(Feedback).filter_by(prediction_id=feedback_id).first()
+    if not feedback:
+        raise HTTPException(status_code=404, detail="Feedback não encontrado.")
+    return feedback
