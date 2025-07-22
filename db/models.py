@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -13,6 +13,7 @@ class Model(Base):
     name = Column(String, nullable=False)
     version = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
+    is_active = Column(Boolean, default=False) 
 
     # Relação com as previsões feitas por nosso modelo.
     prediction_id = relationship("Prediction", back_populates="model")
