@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Path, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from schemas.feedback_schema import *
 from schemas.prediction_schema import *
 from services import ml_service

@@ -32,7 +32,7 @@ class Prediction(Base):
 class Feedback(Base):
     __tablename__ = "feedback"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     prediction_id = Column(Integer, nullable=False)
     correct_label = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
