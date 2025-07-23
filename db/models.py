@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
-=======
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
->>>>>>> ced627ccbdd14c53a54bbee570cbe2ba48acb05f
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
