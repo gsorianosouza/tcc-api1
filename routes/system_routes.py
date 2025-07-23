@@ -1,15 +1,10 @@
-<<<<<<< HEAD
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Path
-from db.models import Feedback, Model
-from schemas.feedback_schema import FeedbackResponse, FeedbackResponseFull, UpdateFeedbackRequest
-from schemas.model_schema import ModelSchema
-=======
-from fastapi import APIRouter, Depends, HTTPException, Response
 from db.models import Model
 from db.models import Prediction
 from schemas.model_schema import *
->>>>>>> ced627ccbdd14c53a54bbee570cbe2ba48acb05f
+from fastapi import APIRouter, Depends, HTTPException, Response
+from schemas.feedback_schema import FeedbackResponse, FeedbackResponseFull, UpdateFeedbackRequest
+from schemas.model_schema import ModelSchema
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from db.deps import get_db
@@ -67,41 +62,6 @@ def delete_model(model_id: int, db: Session = Depends(get_db)):
 def list_models(db: Session = Depends(get_db)):
     models = db.query(Model).all()
     
-<<<<<<< HEAD
-    return { "Message": "Modelo deletado com sucesso!" }
-
-@router.get(
-    "/feedback-list",
-    response_model=List[FeedbackResponseFull],
-    summary="Lista todos os feedbacks",
-    description="Retorna todos os feedbacks armazenados no banco de dados."
-)
-def list_feedbacks(db: Session = Depends(get_db)):
-    feedbacks = db.query(Feedback).all()
-    return feedbacks
-
-@router.put(
-    "/feedback/{prediction_id}",
-    response_model=FeedbackResponse,
-    summary="Atualiza um feedback existente",
-    description="Edita o campo 'correct_label' de um feedback com base no prediction_id."
-)
-def update_feedback(
-    prediction_id: int,
-    payload: UpdateFeedbackRequest,
-    db: Session = Depends(get_db)
-):
-    feedback = db.query(Feedback).filter_by(prediction_id=prediction_id).first()
-
-    if not feedback:
-        raise HTTPException(status_code=404, detail="Feedback não encontrado para essa previsão.")
-
-    feedback.correct_label = payload.correct_label
-    db.commit()
-    db.refresh(feedback)
-
-    return FeedbackResponse(message="Feedback atualizado com sucesso!")
-=======
     if not models:
         return []
     
@@ -141,4 +101,3 @@ def activate_model(model_id: int, db: Session = Depends(get_db)):
             "version": model_to_activate.version
         }
     }
->>>>>>> ced627ccbdd14c53a54bbee570cbe2ba48acb05f
