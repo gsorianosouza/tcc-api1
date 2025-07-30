@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -28,3 +28,11 @@ class Prediction(Base):
     created_at = Column(DateTime, default=datetime.now)
     model_id = Column(Integer, ForeignKey('model.id'))
     model = relationship("Model", back_populates="prediction_id")
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    prediction_id = Column(Integer, nullable=False)
+    correct_label = Column(Boolean, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
