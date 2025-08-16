@@ -20,7 +20,7 @@ def list_models(db: Session = Depends(get_db)):
     return model_controller.list_models(db)
 
 @router.get("/predictions")
-def list_predictions(db: Session = Depends(get_db)):
+def list_prediction(db: Session = Depends(get_db)):
     return model_controller.list_predictions(db)
 
 @router.post("/models/{model_id}/activate")
