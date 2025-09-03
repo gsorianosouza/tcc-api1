@@ -5,5 +5,6 @@ class PredictionRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     text: str
-    prediction: bool
+    prediction: str
+    prediction_id: int
     
