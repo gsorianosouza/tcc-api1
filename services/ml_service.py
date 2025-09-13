@@ -6,44 +6,45 @@ from sqlalchemy.orm import Session
 from db.models import Feedback, Model, Prediction
 from views.schemas.feedback_schema import FeedbackRequest, FeedbackResponse
 from views.schemas.prediction_schema import PredictionRequest, PredictionResponse
-from model.extract_features import extract_features
-import keras
+import pandas as pd
+from model.feature_extractor import extract_all_features
 
-model = keras.models.load_model(settings.MODEL_PATH)
-scaler = joblib.load(settings.SCALER_PATH)
+model = joblib.load(settings.MODEL_PATH)
 
 class MlService:
     
     @staticmethod
     def predict(payload: PredictionRequest, db: Session):
-        if not payload.text.strip():
+        if not payload.url.strip():
             raise HTTPException(status_code=400, detail="O texto não pode ser vazio")
         
-        existing_prediction = db.query(Prediction).filter_by(input_text=payload.text).first()
+        existing_prediction = db.query(Prediction).filter_by(input_text=payload.url).first()
         if existing_prediction:
             return PredictionResponse(
                 text=existing_prediction.input_text,
                 prediction=existing_prediction.result,
+                confidence_score=existing_prediction.confidence_score,
                 prediction_id=existing_prediction.id
             )
         
-        features = extract_features(payload.text)
-        X = np.array([features])
-        X_scaled = scaler.transform(X)
+        features = extract_all_features(payload.url)
         
-        y_prob = model.predict(X_scaled, verbose=0).ravel()[0]
-        y_pred = "Phishing" if y_prob >= 0.5 else "Legítimo"
-
-        model_record = db.query(Model).filter_by(name="Rede Neural", version="1.0").first()
+        df = pd.DataFrame([features])
+        
+        y_pred_proba = model.predict_proba(df)[0][1]
+        y_pred = "Phishing" if y_pred_proba >= 0.5 else "Legítimo"
+        
+        model_record = db.query(Model).filter_by(name="XGBoostClassifier", version="1.0").first()
         if not model_record:
-            model_record = Model(name="Rede Neural", version="1.0")
+            model_record = Model(name="XGBoostClassifier", version="1.0")
             db.add(model_record)
             db.commit()
             db.refresh(model_record)
 
         new_prediction = Prediction(
-            input_text=payload.text,
+            input_text=payload.url,
             result=y_pred,
+            confidence_score = float(y_pred_proba),
             model_id=model_record.id
         )
         
@@ -56,11 +57,12 @@ class MlService:
             raise HTTPException(status_code=500, detail=f"Erro ao salvar a previsão: {e}")
     
         return PredictionResponse(
-            text=payload.text,
+            text=payload.url,
             prediction=y_pred,
+            confidence_score= float(y_pred_proba),
             prediction_id=new_prediction.id
         )
-    
+
     @staticmethod
     def feedback(payload: FeedbackRequest, db: Session):
         prediction = db.query(Prediction).filter_by(id=payload.prediction_id).first()
@@ -82,5 +84,4 @@ class MlService:
         
         return FeedbackResponse(message="Feedback recebido com sucesso!")
         
-    
 ml_service = MlService()

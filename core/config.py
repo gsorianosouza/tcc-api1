@@ -7,10 +7,8 @@ class Settings (BaseSettings):
     
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
     
-    MODEL_PATH: Path = BASE_DIR / "model" / "final_model.h5"
-    
-    SCALER_PATH: Path = BASE_DIR / "model" / "scaler.pkl"
-    
+    MODEL_PATH: Path = BASE_DIR / "model" / "XGBoostClassifier.pickle.dat"
+        
     DATA_PATH: Path = BASE_DIR / "model" / "dataset" / "Phishing_Legitimate_full.csv"
     
     DATABASE_URL: str = "sqlite:///./test.db"
