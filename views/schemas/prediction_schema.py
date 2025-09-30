@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 
 class PredictionRequest(BaseModel):
-    text: str
+    url: str
 
 class PredictionResponse(BaseModel):
-    text: str
-    prediction: bool
+    url: str
+    prediction: str
+    probabilities: dict
+    prediction_id: int
     
