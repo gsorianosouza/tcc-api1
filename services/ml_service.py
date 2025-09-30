@@ -41,7 +41,7 @@ class MlService:
         # OTIMIZAÇÃO: A variável confidence_score já existe, não precisa ser criada de novo
         df = pd.DataFrame([features])
         y_pred_proba = model.predict_proba(df)[0][1]
-        y_pred = "Phishing" if y_pred_proba >= 0.5 else "Legítimo"
+        y_pred = "Phishing" if y_pred_proba >= 0.7 else "Legítimo"
         
         # OTIMIZAÇÃO: Extrai os detalhes do SSL e cria o objeto para a resposta
         ssl_details_raw = get_certificate_details(domain)
