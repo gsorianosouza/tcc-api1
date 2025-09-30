@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -25,7 +25,6 @@ class Prediction(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     input_text = Column(String, nullable=False)
     result = Column(String, nullable=False)
-    confidence_score = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
     model_id = Column(Integer, ForeignKey('model.id'))
     model = relationship("Model", back_populates="prediction_id")
