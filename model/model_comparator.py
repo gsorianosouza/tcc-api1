@@ -17,7 +17,7 @@ from wordcloud import WordCloud
 # -----------------------------
 # Load dataset
 # -----------------------------
-df = pd.read_csv('./model/dataset/malicious_phish.csv')
+df = pd.read_csv('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/dataset/malicious_phish.csv')
 
 # Distribuição de classes
 plt.figure(figsize=(6,4))

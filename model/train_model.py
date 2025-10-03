@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 
-df = pd.read_csv('./model/dataset/malicious_phish.csv')
+df = pd.read_csv('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/dataset/malicious_phish.csv')
 
 label_encoder = LabelEncoder()
 df['label_encoded'] = label_encoder.fit_transform(df['type'])
@@ -54,7 +54,6 @@ def extract_features(url):
     features['is_common_tld'] = int(tld in ['com','org','net','edu','gov'])
     features['has_hex'] = int(bool(re.search(r'%[0-9a-fA-F]{2}', url)))
     features['repeated_chars'] = int(bool(re.search(r'(.)\1{3,}', url)))
-    features['is_live'] = check_url_status(url)
     
     return pd.Series(features)
 
@@ -66,7 +65,7 @@ print("Treinando o modelo RandomForest...")
 model = RandomForestClassifier(n_estimators=200, max_depth=15, random_state=42)
 model.fit(X, y)
 
-joblib.dump(model, './model/rf_model.pkl')
-joblib.dump(label_encoder, './model/label_encoder.pkl')
+joblib.dump(model, 'C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/rf_model.pkl')
+joblib.dump(label_encoder, 'C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/label_encoder.pkl')
 
 print("Modelo e encoder salvos com sucesso!")
