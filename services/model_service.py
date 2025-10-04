@@ -7,33 +7,6 @@ from views.schemas.model_schema import ModelCreate
 class ModelService:
     
     @staticmethod
-    def add_model(model: ModelCreate, db: Session):
-        if not model.name or not model.version:
-            raise HTTPException(status_code=400, detail="Nome e versão do modelo são obrigatórios!")
-
-        existing_model = db.query(Model).filter(
-            Model.name == model.name,
-            Model.version == model.version
-        ).first()
-        
-        if existing_model:
-            raise HTTPException(status_code=400, detail="Modelo já existe no banco de dados")
-
-        existing_active_model = db.query(Model).filter(Model.is_active == True).first()
-
-        new_model = Model(
-            name=model.name,
-            version=model.version,
-            is_active=True if not existing_active_model else False
-        )
-
-        db.add(new_model)
-        db.commit()
-        db.refresh(new_model)
-
-        return new_model
-    
-    @staticmethod
     def delete_model(model_id: int, db: Session):
         model = db.query(Model).filter(Model.id == model_id).first()
         

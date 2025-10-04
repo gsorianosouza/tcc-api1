@@ -12,12 +12,17 @@ from db.models import Prediction, Feedback
 from views.schemas.prediction_schema import PredictionRequest, PredictionResponse
 from views.schemas.feedback_schema import FeedbackRequest, FeedbackResponse
 
-model = joblib.load('./model/rf_model.pkl')
-label_encoder = joblib.load('./model/label_encoder.pkl')
+model = joblib.load('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/rf_model.pkl')
+label_encoder = joblib.load('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/label_encoder.pkl')
 
 suspicious_keywords = ['login','signin','verify','update','banking','account','secure','ebay','paypal']
 
+
+
 def check_url_status(url: str) -> int:
+
+    if url.startswith(("http://", "https://")):
+        url = url = re.sub(r"^https?://", "", url)
 
     test_url = url if '://' in url else 'http://' + url
     
@@ -39,7 +44,10 @@ def check_url_status(url: str) -> int:
 
 def extract_features(url: str) -> pd.DataFrame:
     features = {}
-    
+
+    if url.startswith(("http://", "https://")):
+        url = url = re.sub(r"^https?://", "", url)
+
     safe_url = url if '://' in url else 'http://' + url
     
     try:
@@ -65,12 +73,14 @@ def extract_features(url: str) -> pd.DataFrame:
     features['is_common_tld'] = int(tld in ['com','org','net','edu','gov'])
     features['has_hex'] = int(bool(re.search(r'%[0-9a-fA-F]{2}', url)))
     features['repeated_chars'] = int(bool(re.search(r'(.)\1{3,}', url)))
-    features['is_live'] = check_url_status(url)
     
     return pd.DataFrame([features])
 
 def is_valid_url(url: str) -> bool:
     try:
+
+        if url.startswith(("http://", "https://")):
+            url = re.sub(r"^https?://", "", url)
         test_url = url if '://' in url else 'http://' + url
         result = urlparse(test_url)
         return all([result.scheme, result.netloc])
@@ -88,32 +98,42 @@ class MlService:
 
         features = extract_features(url)
 
-        pred_label_encoded = model.predict(features)[0]
-        pred_label = label_encoder.inverse_transform([pred_label_encoded])[0]
-
         url_status = check_url_status(url)
-        
-        if url_status == 0:
-             pass
+
+        prob_dict = {}
+        result_label = None
 
         if hasattr(model, "predict_proba"):
             probs = model.predict_proba(features)[0]
+
             prob_dict = dict(zip(label_encoder.classes_, map(float, probs)))
+
+            phishing_class = "phishing"
+            phishing_prob = prob_dict.get(phishing_class, 0.0)
+
+            result_label = "phishing" if phishing_prob >= 0.5 else "benign"
+
         else:
+            pred_label_encoded = model.predict(features)[0]
+            pred_label = label_encoder.inverse_transform([pred_label_encoded])[0]
+
+            result_label = pred_label
             prob_dict = {cls: None for cls in label_encoder.classes_}
 
-        new_prediction = Prediction(input_text=url, result=pred_label)
+        prob_dict['url_status_code'] = url_status
+
+        new_prediction = Prediction(input_text=url, result=result_label)
         db.add(new_prediction)
         db.commit()
         db.refresh(new_prediction)
-        
-        prob_dict['url_status_code'] = url_status
+
         return PredictionResponse(
             url=url,
-            prediction=pred_label,
+            prediction=result_label,
             probabilities=prob_dict,
             prediction_id=new_prediction.id
         )
+    
 
     @staticmethod
     def feedback(payload: FeedbackRequest, db: Session) -> FeedbackResponse:

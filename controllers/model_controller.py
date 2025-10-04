@@ -5,10 +5,6 @@ from sqlalchemy.orm import Session
 class ModelController:
     
     @staticmethod
-    def add_model(model: ModelCreate, db: Session):
-        return model_service.add_model(model, db)
-    
-    @staticmethod
     def delete_model(model_id: int, db: Session):
         return model_service.delete_model(model_id, db)
     
