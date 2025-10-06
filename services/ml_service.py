@@ -2,11 +2,14 @@ import re
 import string
 import joblib
 import pandas as pd
+import json
 from urllib.parse import urlparse
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 import requests 
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects, RequestException
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from sklearn.model_selection import train_test_split
 
 from db.models import Prediction, Feedback
 from views.schemas.prediction_schema import PredictionRequest, PredictionResponse
@@ -14,6 +17,7 @@ from views.schemas.feedback_schema import FeedbackRequest, FeedbackResponse
 
 model = joblib.load('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/rf_model.pkl')
 label_encoder = joblib.load('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/label_encoder.pkl')
+
 
 suspicious_keywords = ['login','signin','verify','update','banking','account','secure','ebay','paypal']
 
@@ -103,16 +107,16 @@ class MlService:
         prob_dict = {}
         result_label = None
 
-        if hasattr(model, "predict_proba"):
-            probs = model.predict_proba(features)[0]
+        metrics = MlService.get_metrics()
+        confidence = metrics.get("accuracy", 0.5)
 
+        if hasattr(model, "predict_proba"):
+            probs = model.predict_proba(features)[0] 
             prob_dict = dict(zip(label_encoder.classes_, map(float, probs)))
 
             phishing_class = "phishing"
             phishing_prob = prob_dict.get(phishing_class, 0.0)
-
             result_label = "phishing" if phishing_prob >= 0.5 else "benign"
-
         else:
             pred_label_encoded = model.predict(features)[0]
             pred_label = label_encoder.inverse_transform([pred_label_encoded])[0]
@@ -130,9 +134,10 @@ class MlService:
         return PredictionResponse(
             url=url,
             prediction=result_label,
-            probabilities=prob_dict,
+            confidence=confidence,  
+            probabilities=prob_dict,   
             prediction_id=new_prediction.id
-        )
+)
     
 
     @staticmethod
@@ -155,5 +160,17 @@ class MlService:
         db.refresh(new_feedback)
 
         return FeedbackResponse(message="Feedback received successfully!")
+    
+    @staticmethod
+    def get_metrics():
+        try:
+            with open("C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/metrics.json", "r") as f:
+                metrics = json.load(f)
+            return metrics
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="Arquivo de métricas não encontrado.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Erro ao carregar métricas: {str(e)}")
+
 
 ml_service = MlService()

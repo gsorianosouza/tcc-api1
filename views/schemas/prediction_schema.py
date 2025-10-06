@@ -6,6 +6,7 @@ class PredictionRequest(BaseModel):
 class PredictionResponse(BaseModel):
     url: str
     prediction: str
+    confidence: float
     probabilities: dict
     prediction_id: int
     

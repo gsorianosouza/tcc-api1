@@ -12,6 +12,6 @@ class MlController:
     @staticmethod
     def feedback(payload: FeedbackRequest, db: Session) -> FeedbackResponse:
         return ml_service.feedback(payload, db)
-    
+       
 ml_controller = MlController()
     

@@ -5,6 +5,7 @@ from services.prediction_service import prediction_service
 from views.schemas.prediction_schema import PredictionRequest
 from views.schemas.feedback_schema import FeedbackRequest
 from sqlalchemy.orm import Session
+from services.ml_service import MlService
 
 router = APIRouter()
 
@@ -15,3 +16,7 @@ def make_prediction(payload: PredictionRequest, db: Session = Depends(get_db)):
 @router.post("/feedback")
 def make_feedback(payload: FeedbackRequest, db: Session = Depends(get_db)):
     return ml_controller.feedback(payload, db)
+
+@router.get("/metrics")
+def get_model_metrics():
+    return {"model_metrics": MlService.get_metrics()}
