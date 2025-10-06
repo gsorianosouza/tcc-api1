@@ -107,8 +107,8 @@ class MlService:
         prob_dict = {}
         result_label = None
 
-        metrics = MlService.get_metrics()
-        confidence = metrics.get("accuracy", 0.5)
+        #metrics = MlService.get_metrics() 
+        #confidence = metrics.get("accuracy", 0.5)
 
         if hasattr(model, "predict_proba"):
             probs = model.predict_proba(features)[0] 
@@ -117,6 +117,8 @@ class MlService:
             phishing_class = "phishing"
             phishing_prob = prob_dict.get(phishing_class, 0.0)
             result_label = "phishing" if phishing_prob >= 0.5 else "benign"
+
+            confidence = max(prob_dict.values())
         else:
             pred_label_encoded = model.predict(features)[0]
             pred_label = label_encoder.inverse_transform([pred_label_encoded])[0]
