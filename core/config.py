@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
+import json
 import os
 
 class Settings(BaseSettings):
@@ -13,11 +14,12 @@ class Settings(BaseSettings):
     DATASET_PATH: Path = Path(os.getenv("DATASET_PATH", BASE_DIR / "model" / "dataset" / "malicious_phish.csv"))
     METRICS_PATH: Path = Path(os.getenv("METRICS_PATH", BASE_DIR / "model" / "metrics.json"))
     
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/tcc_api")
+    
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", 8000))
     
-    ALLOW_ORIGINS: list[str] = os.getenv("ALLOW_ORIGINS", '["*"]').replace("'", '"')
+    ALLOW_ORIGINS: list[str] = json.loads(os.getenv("ALLOW_ORIGINS", '["*"]'))
     
     class Config:
         env_file = ".env"
