@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     DATASET_PATH: Path = Path(os.getenv("DATASET_PATH", BASE_DIR / "model" / "dataset" / "malicious_phish.csv"))
     METRICS_PATH: Path = Path(os.getenv("METRICS_PATH", BASE_DIR / "model" / "metrics.json"))
     
-    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/tcc_api")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/trustlink-api.db")
     
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", 8000))
