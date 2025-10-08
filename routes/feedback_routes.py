@@ -11,7 +11,3 @@ router = APIRouter()
 @router.get("/feedbacks", response_model=List[FeedbackResponseFull])
 def list_feedbacks(db: Session = Depends(get_db)):
     return feedback_controller.list_feedbacks(db)
-
-@router.put("/feedback/{prediction_id}", response_model=FeedbackResponse)
-def update_feedback(prediction_id: int, payload: UpdateFeedbackRequest, db: Session = Depends(get_db)):
-    return feedback_controller.update_feedback(prediction_id, payload, db)

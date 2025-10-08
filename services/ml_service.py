@@ -7,21 +7,16 @@ from urllib.parse import urlparse
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 import requests 
+from core.config import settings
+from core.model_manager import ModelManager
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects, RequestException
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
-from sklearn.model_selection import train_test_split
-
 from db.models import Prediction, Feedback
 from views.schemas.prediction_schema import PredictionRequest, PredictionResponse
 from views.schemas.feedback_schema import FeedbackRequest, FeedbackResponse
 
-model = joblib.load('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/rf_model.pkl')
-label_encoder = joblib.load('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/label_encoder.pkl')
-
+model_manager = ModelManager(settings.MODEL_PATH, settings.ENCODER_PATH, settings.METRICS_PATH)
 
 suspicious_keywords = ['login','signin','verify','update','banking','account','secure','ebay','paypal']
-
-
 
 def check_url_status(url: str) -> int:
 
@@ -39,9 +34,7 @@ def check_url_status(url: str) -> int:
             return 1
         return -1
         
-    except (ConnectionError, Timeout, TooManyRedirects):
-        return 0
-    except RequestException:
+    except (ConnectionError, Timeout, TooManyRedirects, RequestException):
         return 0
     except Exception:
         return 0
@@ -50,7 +43,7 @@ def extract_features(url: str) -> pd.DataFrame:
     features = {}
 
     if url.startswith(("http://", "https://")):
-        url = url = re.sub(r"^https?://", "", url)
+        url = re.sub(r"^https?://", "", url)
 
     safe_url = url if '://' in url else 'http://' + url
     
@@ -61,7 +54,6 @@ def extract_features(url: str) -> pd.DataFrame:
     except Exception:
         tld = ''
         netloc = ''
-        parsed_url = urlparse('')
     
     features['url_length'] = len(url)
     features['num_digits'] = sum(c.isdigit() for c in url)
@@ -106,9 +98,10 @@ class MlService:
 
         prob_dict = {}
         result_label = None
-
-        #metrics = MlService.get_metrics() 
-        #confidence = metrics.get("accuracy", 0.5)
+        confidence = None
+        
+        model = model_manager.model
+        label_encoder = model_manager.encoder
 
         if hasattr(model, "predict_proba"):
             probs = model.predict_proba(features)[0] 
@@ -143,30 +136,37 @@ class MlService:
     
 
     @staticmethod
-    def feedback(payload: FeedbackRequest, db: Session) -> FeedbackResponse:
-        prediction = db.query(Prediction).filter_by(id=payload.prediction_id).first()
+    def feedback(prediction_id: int, payload: FeedbackRequest, db: Session) -> FeedbackResponse:
+        prediction = db.query(Prediction).filter_by(id=prediction_id).first()
 
         if not prediction:
-            raise HTTPException(status_code=404, detail="Prediction not found!")
+            raise HTTPException(status_code=404, detail="Previsão não encontrada!")
 
-        existing_feedback = db.query(Feedback).filter_by(prediction_id=payload.prediction_id).first()
+        existing_feedback = db.query(Feedback).filter_by(prediction_id=prediction_id).first()
+    
         if existing_feedback:
-            raise HTTPException(status_code=400, detail="Feedback already exists for this prediction.")
+            existing_feedback.correct_label = payload.correct_label
+            message = "Feedback atualizado com sucesso!"
+        
+        else:
+            new_feedback = Feedback(
+                prediction_id=prediction_id,
+                correct_label=payload.correct_label
+            )
+            db.add(new_feedback)
+            message = "Feedback enviado com sucesso!"
 
-        new_feedback = Feedback(
-            prediction_id=payload.prediction_id,
-            correct_label=payload.correct_label
-        )
-        db.add(new_feedback)
+        prediction.result = payload.correct_label
+
         db.commit()
-        db.refresh(new_feedback)
+        db.refresh(prediction)
 
-        return FeedbackResponse(message="Feedback received successfully!")
+        return FeedbackResponse(message=message)
     
     @staticmethod
     def get_metrics():
         try:
-            with open("C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/metrics.json", "r") as f:
+            with open(settings.METRICS_PATH, "r") as f:
                 metrics = json.load(f)
             return metrics
         except FileNotFoundError:

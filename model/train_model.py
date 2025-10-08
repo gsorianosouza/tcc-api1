@@ -4,12 +4,13 @@ import string
 import re
 import joblib
 import requests 
+from core.config import settings
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects, RequestException
 from urllib.parse import urlparse
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 
-df = pd.read_csv('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/dataset/malicious_phish.csv')
+df = pd.read_csv(settings.DATASET_PATH)
 
 label_encoder = LabelEncoder()
 df['label_encoded'] = label_encoder.fit_transform(df['type'])
@@ -65,7 +66,7 @@ print("Treinando o modelo RandomForest...")
 model = RandomForestClassifier(n_estimators=200, max_depth=15, random_state=42)
 model.fit(X, y)
 
-joblib.dump(model, 'C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/rf_model.pkl')
-joblib.dump(label_encoder, 'C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/label_encoder.pkl')
+joblib.dump(model, settings.MODEL_PATH)
+joblib.dump(label_encoder, settings.ENCODER_PATH)
 
 print("Modelo e encoder salvos com sucesso!")

@@ -4,7 +4,6 @@ class SystemService:
     def get_status():
         return {
             "status": "ok",
-            "model_loaded": True
         }
         
 

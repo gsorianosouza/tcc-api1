@@ -3,16 +3,20 @@ import json
 import joblib
 import time
 import string, re
+from core.config import settings
+from sklearn.preprocessing import label_binarize
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
+print("Carregando modelo e encoder")
 
+start = time.time()
 
-print("Carregando modelo e encoder...")
-model = joblib.load("C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/rf_model.pkl")
-label_encoder = joblib.load("C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/label_encoder.pkl")
+model = joblib.load(settings.MODEL_PATH)
+label_encoder = joblib.load(settings.ENCODER_PATH)
 
-print("Carregando amostra do dataset...")
-df = pd.read_csv("C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/dataset/malicious_phish.csv")
+print("Carregando amostra do dataset")
+
+df = pd.read_csv(settings.DATASET_PATH)
 
 suspicious_keywords = ['login','signin','verify','update','banking','account','secure','ebay','paypal']
 
@@ -35,31 +39,32 @@ def extract_features(url):
     features['repeated_chars'] = int(bool(re.search(r'(.)\1{3,}', url)))
     return pd.Series(features)
 
-print("Extraindo features e calculando métricas...")
+print("Extraindo features e calculando métricas")
+
 X = df['url'].apply(extract_features)
 y_true = label_encoder.transform(df['type'])
 y_pred = model.predict(X)
-y_proba = model.predict_proba(X)[:, 1] if len(model.classes_) == 2 else None
+
+y_true_bin = label_binarize(y_true, classes=range(len(model.classes_)))
+y_proba = model.predict_proba(X)
 
 metrics = {
     "accuracy": accuracy_score(y_true, y_pred),
     "precision": precision_score(y_true, y_pred, average="weighted"),
     "recall": recall_score(y_true, y_pred, average="weighted"),
     "f1_score": f1_score(y_true, y_pred, average="weighted"),
+    "roc_auc": roc_auc_score(y_true_bin, y_proba, average="weighted", multi_class="ovr")
 }
-
-if y_proba is not None:
-    from sklearn.metrics import roc_auc_score
-    metrics["roc_auc"] = roc_auc_score(y_true, y_proba)
 
 metrics["confusion_matrix"] = confusion_matrix(y_true, y_pred).tolist()
 
-print("Salvando métricas...")
-with open("C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/metrics.json", "w") as f:
+print("Salvando métricas")
+
+with open(settings.METRICS_PATH, "w") as f:
     json.dump(metrics, f, indent=4)
 
-start = time.time()
-y_pred = model.predict(X)  # ou X_test
+y_pred = model.predict(X)
+
 print(f"Tempo de predição: {time.time() - start:.2f} segundos")
 
-print("✅ Métricas salvas com sucesso")
+print("✅ Métricas salvas com sucesso ✅")
