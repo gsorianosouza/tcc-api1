@@ -17,9 +17,9 @@ from wordcloud import WordCloud
 # -----------------------------
 # Load dataset
 # -----------------------------
+
 df = pd.read_csv('C:/Users/gabri/Desktop/tcc2/tcc-api/tcc-api/model/dataset/malicious_phish.csv')
 
-# Distribuição de classes
 plt.figure(figsize=(6,4))
 sns.countplot(x='type', data=df)
 plt.title('Distribution of URL Types')
@@ -30,6 +30,7 @@ plt.show()
 # -----------------------------
 # Wordclouds por tipo
 # -----------------------------
+
 types = ['phishing','malware','defacement','benign']
 for t in types:
     urls = " ".join(i for i in df[df.type==t].url)
@@ -44,6 +45,7 @@ for t in types:
 # -----------------------------
 # Preprocessing
 # -----------------------------
+
 print(df.isnull().sum())
 label_encoder = LabelEncoder()
 df['label_encoded'] = label_encoder.fit_transform(df['type'])
@@ -72,7 +74,6 @@ def extract_features(url):
 features_df = df['url'].apply(extract_features)
 df = pd.concat([df, features_df], axis=1)
 
-# Correlation heatmap
 numeric_df = df.select_dtypes(include='number')
 plt.figure(figsize=(10,6))
 sns.heatmap(numeric_df.corr(), annot=True, fmt=".2f", cmap="coolwarm")
@@ -82,12 +83,14 @@ plt.show()
 # -----------------------------
 # Features and target
 # -----------------------------
+
 X = df.drop(columns=['url','type','label_encoded'])
 y = df['label_encoded']
 
 # -----------------------------
 # Modelos
 # -----------------------------
+
 models = {
     'XGBoost': XGBClassifier(use_label_encoder=False, eval_metric='mlogloss'),
     'Random Forest': RandomForestClassifier(),
@@ -102,10 +105,10 @@ train_accuracies = []
 # -----------------------------
 # Treinamento e avaliação
 # -----------------------------
+
 for name, model in models.items():
     print(f"\n===== {name} =====")
     
-    # Cross-validation folds
     for fold, (train_idx, test_idx) in enumerate(cv.split(X, y),1):
         X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
         y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
@@ -132,7 +135,6 @@ for name, model in models.items():
         print(f"Acurácia: {acc:.4f}")
         print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
     
-    # Treino completo (overfitting check)
     model.fit(X, y)
     y_pred_train = model.predict(X)
     train_acc = accuracy_score(y, y_pred_train)
@@ -142,13 +144,13 @@ for name, model in models.items():
 # -----------------------------
 # Resultados agregados
 # -----------------------------
+
 print("\nResumo de todas as métricas por fold:")
 print(results_df)
 
 mean_accuracies = results_df.groupby('Model')['Accuracy'].mean()
 std_accuracies = results_df.groupby('Model')['Accuracy'].std()
 
-# Comparação K-Fold
 plt.figure(figsize=(10,6))
 plt.bar(mean_accuracies.index, mean_accuracies.values, yerr=std_accuracies.values, capsize=5, alpha=0.7, label='CV Accuracy')
 plt.scatter(mean_accuracies.index, train_accuracies, color='red', label='Train Accuracy', zorder=5)
@@ -158,7 +160,6 @@ plt.ylim(0,1.05)
 plt.legend()
 plt.show()
 
-# Distribuição por fold
 plt.figure(figsize=(10,6))
 sns.boxplot(x='Model', y='Accuracy', data=results_df)
 plt.title('Distribuição da Acurácia por Fold')
