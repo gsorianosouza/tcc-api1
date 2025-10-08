@@ -51,6 +51,7 @@ class ModelService:
 
             joblib.dump(model, settings.MODEL_PATH)
             joblib.dump(label_encoder, settings.ENCODER_PATH)
+            
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Erro ao treinar e salvar o modelo: {str(e)}")
 
