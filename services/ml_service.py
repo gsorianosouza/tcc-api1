@@ -90,7 +90,7 @@ class MlService:
         url = payload.url.strip()
 
         if not is_valid_url(url):
-            raise HTTPException(status_code=400, detail="Invalid URL format")
+            raise HTTPException(status_code=400, detail="URL inválida")
 
         features = extract_features(url)
 
@@ -102,6 +102,12 @@ class MlService:
         
         model = model_manager.model
         label_encoder = model_manager.encoder
+
+        if model is None or label_encoder is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Nenhum modelo treinado disponível. Por favor, use a rota de treinamento para treinar o modelo antes de fazer previsões."
+            )
 
         if hasattr(model, "predict_proba"):
             probs = model.predict_proba(features)[0] 
