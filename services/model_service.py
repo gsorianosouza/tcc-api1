@@ -1,54 +1,63 @@
-from fastapi import HTTPException, Response
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from db.models import Model
-from views.schemas.model_schema import ModelCreate
+import pandas as pd
+import string, re, joblib
+from fastapi import HTTPException
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from core.config import settings
 
+suspicious_keywords = ['login','signin','verify','update','banking','account','secure','ebay','paypal']
+
+def extract_features(url: str):
+    features = {}
+    features['url_length'] = len(url)
+    features['num_digits'] = sum(c.isdigit() for c in url)
+    features['num_special_chars'] = sum(c in string.punctuation for c in url)
+    features['num_subdomains'] = url.count('.') - 1
+    features['has_ip'] = int(bool(re.search(r'\d+\.\d+\.\d+\.\d+', url)))
+    features['has_https'] = int('https' in url.lower())
+    features['num_params'] = url.count('?')
+    features['num_fragments'] = url.count('#')
+    features['num_slashes'] = url.count('/')
+    features['has_suspicious_words'] = int(any(word in url.lower() for word in suspicious_keywords))
+    tld = url.split('.')[-1]
+    features['tld_length'] = len(tld)
+    features['is_common_tld'] = int(tld in ['com','org','net','edu','gov'])
+    features['has_hex'] = int(bool(re.search(r'%[0-9a-fA-F]{2}', url)))
+    features['repeated_chars'] = int(bool(re.search(r'(.)\1{3,}', url)))
+    return pd.Series(features)
 class ModelService:
     
     @staticmethod
-    def delete_model(model_id: int, db: Session):
-        model = db.query(Model).filter(Model.id == model_id).first()
-        
-        if not model:
-            raise HTTPException(status_code=404, detail="Modelo não encontrado")
-        
-        if model.is_active:
-            raise HTTPException(status_code=400, detail="Não é possível deletar um modelo ativo.")
+    def train_model():
+        try:
+            df = pd.read_csv(settings.DATASET_PATH)
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="Dataset não encontrado")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Erro ao carregar dataset: {str(e)}")
 
-        db.delete(model)
-        db.commit()
-
-        return Response(status_code=204)
-    
-    @staticmethod
-    def list_models(db: Session):
-        return db.query(Model).all()
-
-    @staticmethod
-    def activate_model(model_id: int, db: Session):
-        model_to_activate = db.query(Model).filter(Model.id == model_id).first()
-        
-        if not model_to_activate:
-            raise HTTPException(status_code=404, detail="Modelo não encontrado")
-        
-        if model_to_activate.is_active:
-            raise HTTPException(status_code=400, detail="Este modelo já está ativo")
+        if 'url' not in df.columns or 'type' not in df.columns:
+            raise HTTPException(status_code=400, detail="Dataset inválido: precisa conter colunas 'url' e 'type'")
 
         try:
-            db.query(Model).filter(Model.is_active == True).update({"is_active": False})
-            model_to_activate.is_active = True
-            db.commit()
-        except IntegrityError:
-            raise HTTPException(status_code=500, detail="Erro ao atualizar o modelo ativo")
-            
+            label_encoder = LabelEncoder()
+            df['label_encoded'] = label_encoder.fit_transform(df['type'])
+
+            X = df['url'].apply(extract_features)
+            y = df['label_encoded']
+
+            model = RandomForestClassifier(n_estimators=200, max_depth=15, random_state=42)
+            model.fit(X, y)
+
+            joblib.dump(model, settings.MODEL_PATH)
+            joblib.dump(label_encoder, settings.ENCODER_PATH)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Erro ao treinar e salvar o modelo: {str(e)}")
+
         return {
-            "Message": f"Modelo '{model_to_activate.name}' agora está ativo.",
-            "Model": {
-                "id": model_to_activate.id,
-                "name": model_to_activate.name,
-                "version": model_to_activate.version
-            }
+            "message": "Modelo e encoder salvos com sucesso!",
+            "model_path": settings.MODEL_PATH,
+            "encoder_path": settings.ENCODER_PATH
         }
 
 model_service = ModelService()

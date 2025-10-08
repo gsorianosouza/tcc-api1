@@ -12,6 +12,10 @@ class MlController:
     @staticmethod
     def feedback(prediction_id: int, payload: FeedbackRequest, db: Session) -> FeedbackResponse:
         return ml_service.feedback(prediction_id, payload, db)
+    
+    @staticmethod
+    def get_model_metrics():
+        return {"model_metrics": ml_service.get_metrics()}
        
 ml_controller = MlController()
     
